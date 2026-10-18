@@ -8,19 +8,24 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:'Noto Nastaliq Urdu',serif;background:#f7f3e8;color:#222}
-header{background:linear-gradient(135deg,#0b3d2e,#145a43);color:#fff;text-align:center;padding:25px 12px 18px;border-bottom:5px solid #c9a227}
-.logoWrap{width:95px;height:95px;border-radius:50%;background:#fff;margin:0 auto 8px;border:4px solid #c9a227;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.logoWrap img{width:100%;height:100%;object-fit:cover;display:block}
+body.en{font-family:Arial,sans-serif;direction:ltr}
+body.en .urdu{font-family:Arial,sans-serif}
+header{background:linear-gradient(135deg,#0b3d2e,#145a43);color:#fff;text-align:center;padding:12px 12px 18px;border-bottom:5px solid #c9a227;position:relative}
+.topNav{display:flex;justify-content:space-between;align-items:center}
+.hamb{font-size:28px;background:#c9a227;color:#000;border:0;border-radius:8px;padding:4px 12px;cursor:pointer}
+.langBtn{background:#fff;color:#0b3d2e;border:2px solid #c9a227;padding:6px 14px;border-radius:20px;font-weight:bold;cursor:pointer;font-family:inherit}
+.logoWrap{width:95px;height:95px;border-radius:50%;background:#fff;margin:8px auto;border:4px solid #c9a227;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.logoWrap img{width:100%;height:100%;object-fit:cover}
 .logoFallback{font-size:48px;color:#0b3d2e;font-family:'Amiri',serif}
-header h1{margin:5px 0;font-size:28px;line-height:2}
-header p{margin:4px 0;font-size:15px;color:#ffe9a8;line-height:2}
+header h1{margin:5px 0;font-size:26px;line-height:2}
+header p{margin:4px 0;font-size:14px;color:#ffe9a8;line-height:2}
+.marquee{background:#c9a227;color:#000;overflow:hidden;white-space:nowrap;padding:7px 0;font-weight:bold;font-size:14px;border-bottom:3px solid #0b3d2e}
+.marquee span{display:inline-block;padding-left:100%;animation:mar 28s linear infinite}
+@keyframes mar{from{transform:translateX(0)}to{transform:translateX(-100%)}}
 .topbar{position:sticky;top:0;z-index:10;background:#fff;padding:10px;border-bottom:2px solid #ddd;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .topbar input{flex:1;min-width:200px;padding:12px;border:2px solid #0b3d2e;border-radius:10px;font-family:inherit;font-size:15px}
 .btn{background:#0b3d2e;color:#fff;border:0;padding:10px 16px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:bold}
-.btn.gold{background:#c9a227;color:#000}
-.btn.red{background:#b91c1c}
-.btn.blue{background:#1a73e8}
-.btn.small{padding:6px 12px;font-size:13px}
+.btn.gold{background:#c9a227;color:#000}.btn.red{background:#b91c1c}.btn.blue{background:#1a73e8}.btn.small{padding:6px 12px;font-size:13px}
 .wrap{max-width:950px;margin:auto;padding:12px}
 .card{background:#fff;border:1px solid #e5dcc3;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
 .card h3{margin:0 0 8px;color:#0b3d2e}
@@ -40,26 +45,48 @@ textarea{min-height:90px}
 #lock{position:fixed;inset:0;background:#0b3d2ed9;display:none;align-items:center;justify-content:center;z-index:9999}
 #lock>div{background:#fff;padding:20px;border-radius:14px;width:90%;max-width:340px;text-align:center}
 .googleBox{background:#e8f0fe;border:2px dashed #1a73e8;padding:10px;border-radius:10px;margin:8px 0}
+/* SIDEBAR */
+#sidebar{position:fixed;top:0;right:0;width:290px;max-width:85vw;height:100%;background:#0b2e24;color:#fff;z-index:10000;transform:translateX(105%);transition:.3s;overflow-y:auto;padding:16px}
+#sidebar.open{transform:translateX(0)}
+#sidebar .closeBtn{background:#fff;color:#000;border:0;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer}
+.sideItem{border-bottom:1px solid #ffffff22;padding:12px 4px;cursor:pointer}
+.sideItem b{color:#b6f0c8;font-size:16px}
+.sideItem span{float:left;color:#7ef29d}
+.sideSub{padding:8px 12px;background:#ffffff12;border-radius:8px;margin:8px 0;display:none}
+.sideSub div{padding:6px 0;border-bottom:1px solid #ffffff22;font-size:14px}
+.overlay{position:fixed;inset:0;background:#0008;z-index:9998;display:none}
+.overlay.show{display:block}
 </style>
 </head>
 <body>
 
-<div id="lock"><div><h3 style="color:#0b3d2e">ایڈمن لاگ ان</h3><p>صرف ڈاکٹر محمد زیشان کے لیے</p><input type="password" id="passInput" placeholder="پاسورڈ لکھیں"><br><br><button class="btn" onclick="checkPass()">کھولیں</button> <button class="btn red" onclick="document.getElementById('lock').style.display='none'">بند</button><p id="err" style="color:red"></p></div></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<div id="sidebar">
+<div style="display:flex;justify-content:space-between;align-items:center"><b id="sideTitle">دفاع اسلام</b><button class="closeBtn" onclick="closeSidebar()">✕</button></div>
+<div style="margin:10px 0"><button class="langBtn" onclick="toggleLang()">اردو | ENG</button></div>
+<div id="sideMenu"></div>
+<p style="font-size:12px;color:#ccc;margin-top:20px">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</p>
+</div>
+
+<div id="lock"><div><h3>ایڈمن لاگ ان</h3><p>صرف ڈاکٹر محمد زیشان کے لیے</p><input type="password" id="passInput" placeholder="پاسورڈ لکھیں"><br><br><button class="btn" onclick="checkPass()">کھولیں</button> <button class="btn red" onclick="document.getElementById('lock').style.display='none'">بند</button><p id="err" style="color:red"></p></div></div>
 
 <header>
-<!-- LOGO FIX: logo.jpg same folder me honi chahiye -->
-<div class="logoWrap">
-<img src="logo.jpg" alt="Logo" onerror="this.style.display='none';document.getElementById('logoFb').style.display='flex'">
-<span id="logoFb" class="logoFallback" style="display:none">☪</span>
+<div class="topNav">
+<button class="hamb" onclick="openSidebar()">☰</button>
+<button class="langBtn" onclick="toggleLang()" id="langTop">ENG</button>
 </div>
-<h1>اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں</h1>
-<p>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</p>
-<p>اسلامی مسائل • دلائل • سوالات و جوابات</p>
+<div class="logoWrap"><img src="logo.jpg" alt="Logo" onerror="this.style.display='none';document.getElementById('logoFb').style.display='flex'"><span id="logoFb" class="logoFallback" style="display:none">☪</span></div>
+<h1 id="mainTitle">اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں</h1>
+<p id="authorTop">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</p>
+<p id="subTitle">اسلامی مسائل • دلائل • سوالات و جوابات</p>
 </header>
+
+<!-- CHALTI PATTI - HAMARA MAQSAD -->
+<div class="marquee"><span id="marqueeText">ہمارا مقصد: اس ویب سائٹ کے ذریعے امت مسلمہ کو اسلامی تعلیمات اور صحیح عقائد سے آگاہ کرنا، باطل عقائد و اعتراضات کو بے نقاب کرنا، قرآن و سنت اور صحیح احادیث کی روشنی میں عوام الناس کی درست رہنمائی و علمی آگاہی دینا ہے — دفاع اہل سنت، دفاع صحابہ کرام اور اسلامی کتب کی ڈیجیٹلائزیشن بھی ہمارے اہم مقاصد میں شامل ہے۔</span></div>
 
 <div class="topbar">
 <input id="searchBox" placeholder="🔍 یہاں تلاش کریں... مثال: نماز، روزہ، وضو، نکاح" oninput="render()">
-<button class="btn" onclick="render()">تلاش</button>
+<button class="btn" onclick="render()" id="searchBtn">تلاش</button>
 </div>
 
 <div class="wrap">
@@ -73,19 +100,11 @@ textarea{min-height:90px}
 <h3>🔐 ایڈمن پینل - صرف آپ کے لیے</h3>
 <p id="editNote" style="font-size:13px;color:#b91c1c;font-weight:bold"></p>
 <select id="typeSel"><option value="topic">موضوع / دلیل</option><option value="qa">سوال و جواب</option></select>
-<input id="fTopic" placeholder="موضوع / سوال کا عنوان - لکھتے ہی گوگل سرچ نیچے آئے گا" oninput="autoGoogle()">
-<input id="fCat" placeholder="زمرہ - مثال: نماز، روزہ، عقائد">
-<div id="googleBox" class="googleBox hidden">
-<b>🔍 گوگل سے آٹو سرچ:</b> <span id="googleQuery" style="color:#1a73e8"></span><br>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-<button class="btn blue" onclick="openGoogle('hadith')">📖 حدیث و دلیل تلاش کریں</button>
-<button class="btn blue" onclick="openGoogle('quran')">📖 قرآن آیت تلاش کریں</button>
-<button class="btn blue" onclick="openGoogle('all')">🔍 مکمل گوگل سرچ</button>
-</div>
-<p style="font-size:11px;color:#555;margin:4px 0">گوگل کھلنے پر وہاں سے عربی عبارت + حوالہ کاپی کر کے نیچے والے خانوں میں لکھیں۔</p>
-</div>
-<textarea id="fArabic" placeholder="عربی عبارت / حدیث / آیت یہاں لکھیں"></textarea>
-<textarea id="fUrdu" placeholder="اردو ترجمہ و تشریح / جواب یہاں لکھیں"></textarea>
+<input id="fTopic" placeholder="موضوع / سوال کا عنوان" oninput="autoGoogle()">
+<input id="fCat" placeholder="زمرہ - مثال: نماز، دفاع اہل سنت، کتب، رد رافضیت">
+<div id="googleBox" class="googleBox hidden"><b>🔍 گوگل سے آٹو سرچ:</b> <span id="googleQuery" style="color:#1a73e8"></span><br><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn blue" onclick="openGoogle('hadith')">📖 حدیث و دلیل تلاش کریں</button><button class="btn blue" onclick="openGoogle('quran')">📖 قرآن آیت تلاش کریں</button><button class="btn blue" onclick="openGoogle('all')">🔍 مکمل گوگل سرچ</button></div></div>
+<textarea id="fArabic" placeholder="عربی عبارت / حدیث / آیت"></textarea>
+<textarea id="fUrdu" placeholder="اردو ترجمہ و تشریح / جواب"></textarea>
 <input id="fRef" placeholder="حوالہ - مثال: صحیح بخاری: 739">
 <button class="btn" onclick="saveData()">💾 محفوظ کریں</button>
 <button class="btn gold" onclick="cancelEdit()">نیا سوال لکھیں</button>
@@ -99,97 +118,67 @@ textarea{min-height:90px}
 <div class="footer">اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں<br><b>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</b><br><br><a href="javascript:void(0)" onclick="document.getElementById('lock').style.display='flex'" style="color:#999;font-size:11px;text-decoration:none">Admin Login</a></div>
 
 <script>
-let isAdmin=false; let editIndex=-1; let expanded={};
-let data = JSON.parse(localStorage.getItem('islamic_data_v1')||'[]');
-let currentTab='all';
-if(data.length===0){
-data=[
-{type:'topic',topic:'نماز میں رفع یدین کا حکم',cat:'نماز',arabic:'عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا قَالَ: رَأَيْتُ رَسُولَ اللَّهِ ﷺ إِذَا قَامَ فِي الصَّلَاةِ رَفَعَ يَدَيْهِ حَتَّى تَكُونَا حَذْوَ مَنْكِبَيْهِ',urdu:'حضرت عبداللہ بن عمر رضی اللہ عنہما فرماتے ہیں کہ میں نے رسول اللہ ﷺ کو دیکھا جب آپ نماز کے لیے کھڑے ہوتے تو اپنے دونوں ہاتھ کندھوں کے برابر اٹھاتے۔',ref:'صحیح بخاری: 735، صحیح مسلم: 390',fav:false},
-{type:'qa',topic:'کیا وضو میں مسح پر مسح جائز ہے؟',cat:'وضو',arabic:'قَالَ رَسُولُ اللَّهِ ﷺ: لَا وُضُوءَ لِمَنْ لَمْ يَذْكُرِ اسْمَ اللَّهِ عَلَيْهِ',urdu:'سوال کا جواب: وضو میں ہر عضو کو ایک بار دھونا فرض ہے، تین بار سنت ہے۔ مسح سر پر ایک بار ہی کافی ہے۔',ref:'سنن ابو داؤد: 101',fav:false}
-];
-saveLocal();
-}
+let isAdmin=false,editIndex=-1,expanded={},lang='ur',currentTab='all';
+let defaultCats=['صفحہ اول','دفاع اہل سنت','کتب','رد رافضیت','دور حاضر کے فتنے','سنی شیعہ مناظرے','ویڈیوز','آڈیوز','گرافکس'];
+let data=JSON.parse(localStorage.getItem('islamic_data_v1')||'[]');
+if(data.length===0){data=[
+{type:'topic',topic:'نماز میں رفع یدین کا حکم',cat:'نماز',arabic:'عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا قَالَ: رَأَيْتُ رَسُولَ اللَّهِ ﷺ إِذَا قَامَ فِي الصَّلَاةِ رَفَعَ يَدَيْهِ',urdu:'حضرت عبداللہ بن عمر رضی اللہ عنہما فرماتے ہیں کہ میں نے رسول اللہ ﷺ کو دیکھا جب آپ نماز کے لیے کھڑے ہوتے تو اپنے دونوں ہاتھ کندھوں کے برابر اٹھاتے۔',ref:'صحیح بخاری: 735، صحیح مسلم: 390',fav:false},
+{type:'qa',topic:'شیر خوار بچے کی شرمگاہ کو ہاتھ لگانے سے وضو ٹوٹ جاتا ہے یا نہیں؟',cat:'وضو',arabic:'إِذَا أَفْضَى أَحَدُكُمْ بِيَدِهِ إِلَى فَرْجِهِ وَ لَيْسَ بَيْنَهُ وَبَيْنَهَا حِجَابٌ وَلَا سِتْرٌ ، فَقَدْ وَجَبَ عَلَيْهِ الْوُضُوءُ',urdu:'ایک مسئلہ اہل علم کے درمیان مختلف فیہ ہے کہ اگر بچے کی شرمگاہ کو ہاتھ لگ جائے تو کیا وضو ٹوٹ جاتا ہے یا وضو نہیں ٹوٹتا ہے؟ بعض اہل علم کہتے ہیں اس سے وضو نہیں ٹوٹے گا اور بعض کہتے ہیں اس سے وضو ٹوٹ جائے گا۔ اس مسئلہ میں صحیح موقف یہ ہے کہ بچے کی شرمگاہ کو ہاتھ لگنے سے وضو ٹوٹ جائے گا کیونکہ یہ مسئلہ منصوص ہے اور اس میں چھوٹے و بڑے کا کوئی فرق نہیں ہے۔',ref:'صحیح الجامع: 362، صحیح ابن ماجہ: 427',fav:false}
+];saveLocal();}
 function saveLocal(){localStorage.setItem('islamic_data_v1',JSON.stringify(data))}
-function checkPass(){
-let v=document.getElementById('passInput').value.trim();
-if(v==="zeeshan786"){isAdmin=true;document.getElementById('lock').style.display='none';document.getElementById('adminCard').classList.remove('hidden');render();alert('ایڈمن کھل گیا!');}
-else{document.getElementById('err').innerText='غلط پاسورڈ!';}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('show');buildMenu()}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
+function toggleLang(){
+lang=lang==='ur'?'en':'ur';
+document.body.classList.toggle('en',lang==='en');
+document.documentElement.dir=lang==='en'?'ltr':'rtl';
+document.getElementById('langTop').innerText=lang==='ur'?'ENG':'اردو';
+document.getElementById('mainTitle').innerText=lang==='ur'?'اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں':'Solution of Islamic Issues in the Light of Quran & Sahih Hadith';
+document.getElementById('authorTop').innerText=lang==='ur'?'تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان':'Research & Writing: Dr. Muhammad Zeeshan';
+document.getElementById('subTitle').innerText=lang==='ur'?'اسلامی مسائل • دلائل • سوالات و جوابات':'Islamic Issues • Evidences • Q & A';
+document.getElementById('searchBtn').innerText=lang==='ur'?'تلاش':'Search';
+document.getElementById('searchBox').placeholder=lang==='ur'?'🔍 یہاں تلاش کریں... مثال: نماز، روزہ، وضو، نکاح':'🔍 Search here... e.g. Namaz, Roza, Wudu, Nikah';
+document.getElementById('tab1').innerText=lang==='ur'?'📚 تمام موضوعات':'📚 All Topics';
+document.getElementById('tab2').innerText=lang==='ur'?'❓ سوالات و جوابات':'❓ Q & A';
+document.getElementById('tab3').innerText=lang==='ur'?'⭐ پسندیدہ':'⭐ Favourites';
+document.getElementById('marqueeText').innerText=lang==='ur'?'ہمارا مقصد: اس ویب سائٹ کے ذریعے امت مسلمہ کو اسلامی تعلیمات اور صحیح عقائد سے آگاہ کرنا، باطل عقائد و اعتراضات کو بے نقاب کرنا، قرآن و سنت اور صحیح احادیث کی روشنی میں عوام الناس کی درست رہنمائی و علمی آگاہی دینا ہے — دفاع اہل سنت، دفاع صحابہ کرام اور اسلامی کتب کی ڈیجیٹلائزیشن بھی ہمارے اہم مقاصد میں شامل ہے۔':'Our Mission: To guide the Muslim Ummah with true Islamic teachings and correct beliefs, to expose false beliefs and objections, and to provide authentic guidance in the light of Quran, Sunnah and Sahih Hadith - Defence of Ahl-e-Sunnah, Defence of Sahaba and digitization of Islamic books are also part of our mission.';
+buildMenu();render();
 }
+function buildMenu(){
+let cats=[...defaultCats];
+data.forEach(d=>{if(d.cat && !cats.includes(d.cat)) cats.push(d.cat)});
+let html='';
+cats.forEach(c=>{
+let items=data.filter(d=>d.cat===c || (c==='صفحہ اول' && true));
+let count=data.filter(d=>d.cat===c).length;
+html+=`<div class="sideItem" onclick="toggleSide(this,'${c}')"><b>${c}</b> <span>▼</span><div class="sideSub">${items.slice(0,5).map(d=>`<div onclick="event.stopPropagation();filterByCat('${d.cat}');closeSidebar()">${d.topic}</div>`).join('')||'<div>ابھی کوئی تحریر نہیں</div>'}</div></div>`;
+});
+document.getElementById('sideMenu').innerHTML=html;
+document.getElementById('sideTitle').innerText=lang==='ur'?'دفاع اسلام':'Defa-e-Islam';
+}
+function toggleSide(el,cat){let sub=el.querySelector('.sideSub');let isOpen=sub.style.display==='block';document.querySelectorAll('.sideSub').forEach(s=>s.style.display='none');sub.style.display=isOpen?'none':'block';}
+function filterByCat(cat){document.getElementById('searchBox').value=cat==='صفحہ اول'?'':cat;render();}
+function checkPass(){let v=document.getElementById('passInput').value.trim();if(v==="zeeshan786"){isAdmin=true;document.getElementById('lock').style.display='none';document.getElementById('adminCard').classList.remove('hidden');render();alert(lang==='ur'?'ایڈمن کھل گیا!':'Admin Opened!')}else{document.getElementById('err').innerText='غلط پاسورڈ!';}}
 function logoutAdmin(){isAdmin=false;editIndex=-1;document.getElementById('adminCard').classList.add('hidden');render();}
 function setTab(t){currentTab=t;document.getElementById('tab1').classList.toggle('active',t==='all');document.getElementById('tab2').classList.toggle('active',t==='qa');document.getElementById('tab3').classList.toggle('active',t==='fav');render()}
-function autoGoogle(){
-let q=document.getElementById('fTopic').value.trim();
-if(q.length>=3){document.getElementById('googleBox').classList.remove('hidden');document.getElementById('googleQuery').innerText=q;}
-else{document.getElementById('googleBox').classList.add('hidden');}
-}
-function openGoogle(mode){
-let q=document.getElementById('fTopic').value.trim();
-if(!q){alert('پہلے سوال لکھیں');return}
-let query=q;
-if(mode==='hadith') query=q+' حدیث صحیح بخاری مسلم دلیل';
-if(mode==='quran') query=q+' قرآن آیت ترجمہ';
-window.open('https://www.google.com/search?q='+encodeURIComponent(query),'_blank');
-}
-function saveData(){
-let t=document.getElementById('fTopic').value.trim();
-if(!t){alert('عنوان لکھیں');return}
-let obj={type:document.getElementById('typeSel').value,topic:t,cat:document.getElementById('fCat').value,arabic:document.getElementById('fArabic').value,urdu:document.getElementById('fUrdu').value,ref:document.getElementById('fRef').value,fav:false};
-if(editIndex>=0){obj.fav=data[editIndex].fav;data[editIndex]=obj;alert('ایڈٹ ہو کر محفوظ ہو گیا!');}
-else{data.unshift(obj);alert('نیا محفوظ ہو گیا!');}
-saveLocal();cancelEdit();render();
-}
+function autoGoogle(){let q=document.getElementById('fTopic').value.trim();if(q.length>=3){document.getElementById('googleBox').classList.remove('hidden');document.getElementById('googleQuery').innerText=q;}else{document.getElementById('googleBox').classList.add('hidden');}}
+function openGoogle(m){let q=document.getElementById('fTopic').value.trim();if(!q){alert('پہلے سوال لکھیں');return}let query=q;if(m==='hadith')query=q+' حدیث صحیح بخاری مسلم دلیل';if(m==='quran')query=q+' قرآن آیت ترجمہ';window.open('https://www.google.com/search?q='+encodeURIComponent(query),'_blank')}
+function saveData(){let t=document.getElementById('fTopic').value.trim();if(!t){alert('عنوان لکھیں');return}let obj={type:document.getElementById('typeSel').value,topic:t,cat:document.getElementById('fCat').value,arabic:document.getElementById('fArabic').value,urdu:document.getElementById('fUrdu').value,ref:document.getElementById('fRef').value,fav:false};if(editIndex>=0){obj.fav=data[editIndex].fav;data[editIndex]=obj;alert('ایڈٹ ہو کر محفوظ ہو گیا!')}else{data.unshift(obj);alert('نیا محفوظ ہو گیا!')}saveLocal();cancelEdit();render();buildMenu();}
 function cancelEdit(){editIndex=-1;document.getElementById('editNote').innerText='';document.getElementById('fTopic').value='';document.getElementById('fCat').value='';document.getElementById('fArabic').value='';document.getElementById('fUrdu').value='';document.getElementById('fRef').value='';document.getElementById('googleBox').classList.add('hidden');}
-function editItem(i){
-if(!isAdmin)return;
-let d=data[i];editIndex=i;
-document.getElementById('typeSel').value=d.type;
-document.getElementById('fTopic').value=d.topic;
-document.getElementById('fCat').value=d.cat||'';
-document.getElementById('fArabic').value=d.arabic||'';
-document.getElementById('fUrdu').value=d.urdu||'';
-document.getElementById('fRef').value=d.ref||'';
-document.getElementById('editNote').innerText='✏️ ایڈٹ موڈ: '+d.topic+' - اب تبدیل کر کے محفوظ کریں';
-document.getElementById('adminCard').scrollIntoView({behavior:'smooth'});
-autoGoogle();
-}
+function editItem(i){if(!isAdmin)return;let d=data[i];editIndex=i;document.getElementById('typeSel').value=d.type;document.getElementById('fTopic').value=d.topic;document.getElementById('fCat').value=d.cat||'';document.getElementById('fArabic').value=d.arabic||'';document.getElementById('fUrdu').value=d.urdu||'';document.getElementById('fRef').value=d.ref||'';document.getElementById('editNote').innerText='✏️ ایڈٹ موڈ: '+d.topic;document.getElementById('adminCard').scrollIntoView({behavior:'smooth'});autoGoogle();}
 function toggleFav(i){data[i].fav=!data[i].fav;saveLocal();render()}
-function delItem(i){if(!isAdmin)return;if(confirm('حذف کرنا ہے؟')){data.splice(i,1);saveLocal();render()}}
-function toggleReadMore(idx){
-let el=document.getElementById('urdu-'+idx);
-let btn=document.getElementById('moreBtn-'+idx);
-if(expanded[idx]){el.classList.add('collapsed');btn.innerText='مزید پڑھیں ▼';expanded[idx]=false;}
-else{el.classList.remove('collapsed');btn.innerText='کم کریں ▲';expanded[idx]=true;}
-}
+function delItem(i){if(!isAdmin)return;if(confirm('حذف کرنا ہے؟')){data.splice(i,1);saveLocal();render();buildMenu();}}
+function toggleReadMore(idx){let el=document.getElementById('urdu-'+idx);let btn=document.getElementById('moreBtn-'+idx);if(expanded[idx]){el.classList.add('collapsed');btn.innerText=lang==='ur'?'مزید پڑھیں ▼':'Read More ▼';expanded[idx]=false;}else{el.classList.remove('collapsed');btn.innerText=lang==='ur'?'کم کریں ▲':'Show Less ▲';expanded[idx]=true;}}
 function render(){
 let q=document.getElementById('searchBox').value.trim();
 let list=document.getElementById('list');list.innerHTML='';
-let filtered=data.filter((d)=>{
-if(currentTab==='qa' && d.type!=='qa') return false;
-if(currentTab==='fav' && !d.fav) return false;
-if(!q) return true;
-let txt=(d.topic+d.cat+d.arabic+d.urdu+d.ref).toLowerCase();
-return txt.includes(q.toLowerCase());
-});
+let filtered=data.filter((d)=>{if(currentTab==='qa'&&d.type!=='qa')return false;if(currentTab==='fav'&&!d.fav)return false;if(!q)return true;let txt=(d.topic+d.cat+d.arabic+d.urdu+d.ref).toLowerCase();return txt.includes(q.toLowerCase());});
 document.getElementById('empty').style.display=filtered.length?'none':'block';
 filtered.forEach(d=>{
-let origIdx=data.indexOf(d);
-let isLong=(d.urdu||'').length>400;
-let isExp=expanded[origIdx]===true;
-list.innerHTML+=`<div class="card">
-<div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div>
-<div><span class="badge">📂 ${d.cat||'عام'}</span> <span class="badge">📖 ${d.ref||'حوالہ درج نہیں'}</span></div>
-${d.arabic?`<div class="arabic" style="margin-top:10px">${d.arabic}</div>`:''}
-<div id="urdu-${origIdx}" class="urdu ${isLong && !isExp ? 'collapsed':''}" style="margin-top:8px">${d.urdu||''}</div>
-${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?'کم کریں ▲':'مزید پڑھیں ▼'}</button></div>`:''}
-<div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div>
-<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
-<button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>
-${isAdmin?`<button class="btn" onclick="editItem(${origIdx})">✏️ ایڈٹ</button><button class="btn red" onclick="delItem(${origIdx})">🗑️ ڈیلیٹ</button>`:''}
-</div>
-</div>`;
-});
-}
-render();
+let origIdx=data.indexOf(d);let isLong=(d.urdu||'').length>400;let isExp=expanded[origIdx]===true;
+list.innerHTML+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?(lang==='ur'?'سوال و جواب':'Q & A'):(lang==='ur'?'موضوع':'Topic')}</span></div><div><span class="badge">📂 ${d.cat||'عام'}</span> <span class="badge">📖 ${d.ref||'حوالہ درج نہیں'}</span></div>${d.arabic?`<div class="arabic" style="margin-top:10px">${d.arabic}</div>`:''}<div id="urdu-${origIdx}" class="urdu ${isLong&&!isExp?'collapsed':''}" style="margin-top:8px">${d.urdu||''}</div>${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?(lang==='ur'?'کم کریں ▲':'Show Less ▲'):(lang==='ur'?'مزید پڑھیں ▼':'Read More ▼')}</button></div>`:''}<div class="author">${lang==='ur'?'تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان':'Research & Writing: Dr. Muhammad Zeeshan'}</div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>${isAdmin?`<button class="btn" onclick="editItem(${origIdx})">✏️ ایڈٹ</button><button class="btn red" onclick="delItem(${origIdx})">🗑️ ڈیلیٹ</button>`:''}</div></div>`;
+});}
+buildMenu();render();
 </script>
 </body>
 </html>
