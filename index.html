@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اسلامی مسائل کا حل - ڈاکٹر محمد زیشان</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Noto Nastaliq Urdu',serif;background:#f7f3e8;color:#222}
+header{background:linear-gradient(135deg,#0b3d2e,#145a43);color:#fff;text-align:center;padding:25px 12px 18px;border-bottom:5px solid #c9a227}
+.logo{width:90px;height:90px;border-radius:50%;background:#fff;color:#0b3d2e;display:flex;align-items:center;justify-content:center;font-size:48px;margin:0 auto 8px;border:4px solid #c9a227;font-family:'Amiri',serif}
+header h1{margin:5px 0;font-size:28px;line-height:2}
+header p{margin:4px 0;font-size:15px;color:#ffe9a8;line-height:2}
+.topbar{position:sticky;top:0;z-index:10;background:#fff;padding:10px;border-bottom:2px solid #ddd;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.topbar input{flex:1;min-width:200px;padding:12px;border:2px solid #0b3d2e;border-radius:10px;font-family:inherit;font-size:15px}
+.btn{background:#0b3d2e;color:#fff;border:0;padding:10px 16px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:bold}
+.btn.gold{background:#c9a227;color:#000}
+.btn.red{background:#b91c1c}
+.wrap{max-width:950px;margin:auto;padding:12px}
+.card{background:#fff;border:1px solid #e5dcc3;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
+.card h3{margin:0 0 8px;color:#0b3d2e}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border:1px solid #ccc;border-radius:9px;font-family:inherit;font-size:14px}
+textarea{min-height:90px}
+.arabic{font-family:'Amiri',serif;font-size:22px;direction:rtl;text-align:right;background:#fff8dc;border-right:5px solid #c9a227;padding:10px;border-radius:8px;line-height:2}
+.urdu{line-height:2.1;font-size:15px}
+.badge{background:#e8f5e9;color:#0b3d2e;padding:3px 10px;border-radius:20px;font-size:12px;display:inline-block}
+.author{border-top:1px dashed #c9a227;margin-top:12px;padding-top:8px;text-align:center;color:#0b3d2e;font-weight:bold;font-size:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.tabs button{flex:1;padding:10px;border-radius:10px;border:1px solid #0b3d2e;background:#fff;cursor:pointer;font-family:inherit;font-weight:bold}
+.tabs button.active{background:#0b3d2e;color:#fff}
+.qbox{background:#f0f7f2;border:1px solid #cce8d4;padding:10px;border-radius:10px;margin-top:10px}
+.hidden{display:none}
+.footer{text-align:center;padding:20px;color:#666;font-size:13px}
+</style>
+</head>
+<body>
+
+<header>
+<div class="logo">☪</div>
+<h1>اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں</h1>
+<p>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</p>
+<p>اسلامی مسائل • دلائل • سوالات و جوابات</p>
+</header>
+
+<div class="topbar">
+<input id="searchBox" placeholder="🔍 یہاں تلاش کریں... مثال: نماز، روزہ، وضو، نکاح" oninput="render()">
+<button class="btn" onclick="render()">تلاش</button>
+<button class="btn gold" onclick="showAdmin()">+ نیا اضافہ کریں</button>
+</div>
+
+<div class="wrap">
+<div class="tabs">
+<button id="tab1" class="active" onclick="setTab('all')">📚 تمام موضوعات</button>
+<button id="tab2" onclick="setTab('qa')">❓ سوالات و جوابات</button>
+<button id="tab3" onclick="setTab('fav')">⭐ پسندیدہ</button>
+</div>
+
+<div id="adminCard" class="card hidden" style="border:2px solid #0b3d2e">
+<h3>📝 نیا موضوع / سوال شامل کریں</h3>
+<select id="typeSel"><option value="topic">موضوع / دلیل</option><option value="qa">سوال و جواب</option></select>
+<input id="fTopic" placeholder="موضوع / سوال کا عنوان - مثال: نماز میں رفع یدین کا حکم">
+<input id="fCat" placeholder="زمرہ - مثال: نماز، روزہ، عقائد، معاملات">
+<textarea id="fArabic" placeholder="عربی عبارت / حدیث / آیت یہاں لکھیں"></textarea>
+<textarea id="fUrdu" placeholder="اردو ترجمہ و تشریح یہاں لکھیں"></textarea>
+<input id="fRef" placeholder="حوالہ - مثال: صحیح بخاری: 739، صحیح مسلم: 390">
+<button class="btn" onclick="saveData()">💾 محفوظ کریں</button>
+<button class="btn red" onclick="document.getElementById('adminCard').classList.add('hidden')">بند کریں</button>
+<p style="font-size:12px;color:#666">نوٹ: یہ ڈیٹا آپ کے موبائل / براؤزر میں محفوظ رہے گا۔</p>
+</div>
+
+<div id="list"></div>
+<div id="empty" class="card" style="text-align:center;display:none">کوئی ڈیٹا نہیں ملا۔ اوپر سے نیا اضافہ کریں۔</div>
+</div>
+
+<div class="footer">اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں<br><b>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</b></div>
+
+<script>
+let data = JSON.parse(localStorage.getItem('islamic_data_v1')||'[]');
+let currentTab='all';
+if(data.length===0){
+data=[
+{type:'topic',topic:'نماز میں رفع یدین کا حکم',cat:'نماز',arabic:'عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا قَالَ: رَأَيْتُ رَسُولَ اللَّهِ ﷺ إِذَا قَامَ فِي الصَّلَاةِ رَفَعَ يَدَيْهِ حَتَّى تَكُونَا حَذْوَ مَنْكِبَيْهِ',urdu:'حضرت عبداللہ بن عمر رضی اللہ عنہما فرماتے ہیں کہ میں نے رسول اللہ ﷺ کو دیکھا جب آپ نماز کے لیے کھڑے ہوتے تو اپنے دونوں ہاتھ کندھوں کے برابر اٹھاتے۔',ref:'صحیح بخاری: 735، صحیح مسلم: 390',fav:false},
+{type:'qa',topic:'کیا وضو میں مسح پر مسح جائز ہے؟',cat:'وضو',arabic:'قَالَ رَسُولُ اللَّهِ ﷺ: لَا وُضُوءَ لِمَنْ لَمْ يَذْكُرِ اسْمَ اللَّهِ عَلَيْهِ',urdu:'سوال کا جواب: وضو میں ہر عضو کو ایک بار دھونا فرض ہے، تین بار سنت ہے۔ مسح سر پر ایک بار ہی کافی ہے۔',ref:'سنن ابو داؤد: 101',fav:false}
+];
+saveLocal();
+}
+function saveLocal(){localStorage.setItem('islamic_data_v1',JSON.stringify(data))}
+function showAdmin(){document.getElementById('adminCard').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
+function setTab(t){currentTab=t;document.getElementById('tab1').classList.toggle('active',t==='all');document.getElementById('tab2').classList.toggle('active',t==='qa');document.getElementById('tab3').classList.toggle('active',t==='fav');render()}
+function saveData(){
+let t=document.getElementById('fTopic').value.trim();
+if(!t){alert('عنوان لکھیں');return}
+data.unshift({type:document.getElementById('typeSel').value,topic:t,cat:document.getElementById('fCat').value,arabic:document.getElementById('fArabic').value,urdu:document.getElementById('fUrdu').value,ref:document.getElementById('fRef').value,fav:false});
+saveLocal();render();
+document.getElementById('fTopic').value='';document.getElementById('fArabic').value='';document.getElementById('fUrdu').value='';document.getElementById('fRef').value='';
+alert('محفوظ ہو گیا!');
+}
+function toggleFav(i){data[i].fav=!data[i].fav;saveLocal();render()}
+function delItem(i){if(confirm('حذف کرنا ہے؟')){data.splice(i,1);saveLocal();render()}}
+function render(){
+let q=document.getElementById('searchBox').value.trim();
+let list=document.getElementById('list');list.innerHTML='';
+let filtered=data.filter((d,idx)=>{
+if(currentTab==='qa' && d.type!=='qa') return false;
+if(currentTab==='fav' && !d.fav) return false;
+if(!q) return true;
+let txt=(d.topic+d.cat+d.arabic+d.urdu+d.ref).toLowerCase();
+return txt.includes(q.toLowerCase());
+});
+document.getElementById('empty').style.display=filtered.length?'none':'block';
+filtered.forEach(d=>{
+let origIdx=data.indexOf(d);
+list.innerHTML+=`<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div>
+<div><span class="badge">📂 ${d.cat||'عام'}</span> <span class="badge">📖 ${d.ref||'حوالہ درج نہیں'}</span></div>
+${d.arabic?`<div class="arabic" style="margin-top:10px">${d.arabic}</div>`:''}
+<div class="urdu" style="margin-top:8px">${d.urdu||''}</div>
+<div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div>
+<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+<button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>
+<button class="btn red" onclick="delItem(${origIdx})">حذف</button>
+</div>
+${d.type==='qa'?`<div class="qbox"><b>جواب:</b><br><span class="urdu">${d.urdu}</span><div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div></div>`:''}
+</div>`;
+});
+}
+render();
+</script>
+</body>
+</html>
