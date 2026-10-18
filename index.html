@@ -9,7 +9,9 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:'Noto Nastaliq Urdu',serif;background:#f7f3e8;color:#222}
 header{background:linear-gradient(135deg,#0b3d2e,#145a43);color:#fff;text-align:center;padding:25px 12px 18px;border-bottom:5px solid #c9a227}
-.logo{width:90px;height:90px;border-radius:50%;background:#fff;color:#0b3d2e;display:flex;align-items:center;justify-content:center;font-size:48px;margin:0 auto 8px;border:4px solid #c9a227;font-family:'Amiri',serif}
+.logoWrap{width:95px;height:95px;border-radius:50%;background:#fff;margin:0 auto 8px;border:4px solid #c9a227;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.logoWrap img{width:100%;height:100%;object-fit:cover;display:block}
+.logoFallback{font-size:48px;color:#0b3d2e;font-family:'Amiri',serif}
 header h1{margin:5px 0;font-size:28px;line-height:2}
 header p{margin:4px 0;font-size:15px;color:#ffe9a8;line-height:2}
 .topbar{position:sticky;top:0;z-index:10;background:#fff;padding:10px;border-bottom:2px solid #ddd;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
@@ -18,6 +20,7 @@ header p{margin:4px 0;font-size:15px;color:#ffe9a8;line-height:2}
 .btn.gold{background:#c9a227;color:#000}
 .btn.red{background:#b91c1c}
 .btn.blue{background:#1a73e8}
+.btn.small{padding:6px 12px;font-size:13px}
 .wrap{max-width:950px;margin:auto;padding:12px}
 .card{background:#fff;border:1px solid #e5dcc3;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px #0001}
 .card h3{margin:0 0 8px;color:#0b3d2e}
@@ -25,6 +28,8 @@ input,select,textarea{width:100%;padding:10px;margin:5px 0;border:1px solid #ccc
 textarea{min-height:90px}
 .arabic{font-family:'Amiri',serif;font-size:22px;direction:rtl;text-align:right;background:#fff8dc;border-right:5px solid #c9a227;padding:10px;border-radius:8px;line-height:2}
 .urdu{line-height:2.1;font-size:15px}
+.urdu.collapsed{max-height:135px;overflow:hidden;position:relative}
+.urdu.collapsed:after{content:'';position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(transparent,#fff)}
 .badge{background:#e8f5e9;color:#0b3d2e;padding:3px 10px;border-radius:20px;font-size:12px;display:inline-block}
 .author{border-top:1px dashed #c9a227;margin-top:12px;padding-top:8px;text-align:center;color:#0b3d2e;font-weight:bold;font-size:14px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
@@ -42,7 +47,11 @@ textarea{min-height:90px}
 <div id="lock"><div><h3 style="color:#0b3d2e">ایڈمن لاگ ان</h3><p>صرف ڈاکٹر محمد زیشان کے لیے</p><input type="password" id="passInput" placeholder="پاسورڈ لکھیں"><br><br><button class="btn" onclick="checkPass()">کھولیں</button> <button class="btn red" onclick="document.getElementById('lock').style.display='none'">بند</button><p id="err" style="color:red"></p></div></div>
 
 <header>
-<div class="logo">☪</div>
+<!-- LOGO FIX: logo.jpg same folder me honi chahiye -->
+<div class="logoWrap">
+<img src="logo.jpg" alt="Logo" onerror="this.style.display='none';document.getElementById('logoFb').style.display='flex'">
+<span id="logoFb" class="logoFallback" style="display:none">☪</span>
+</div>
 <h1>اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں</h1>
 <p>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</p>
 <p>اسلامی مسائل • دلائل • سوالات و جوابات</p>
@@ -66,8 +75,6 @@ textarea{min-height:90px}
 <select id="typeSel"><option value="topic">موضوع / دلیل</option><option value="qa">سوال و جواب</option></select>
 <input id="fTopic" placeholder="موضوع / سوال کا عنوان - لکھتے ہی گوگل سرچ نیچے آئے گا" oninput="autoGoogle()">
 <input id="fCat" placeholder="زمرہ - مثال: نماز، روزہ، عقائد">
-
-<!-- GOOGLE AUTO SEARCH BOX -->
 <div id="googleBox" class="googleBox hidden">
 <b>🔍 گوگل سے آٹو سرچ:</b> <span id="googleQuery" style="color:#1a73e8"></span><br>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
@@ -77,7 +84,6 @@ textarea{min-height:90px}
 </div>
 <p style="font-size:11px;color:#555;margin:4px 0">گوگل کھلنے پر وہاں سے عربی عبارت + حوالہ کاپی کر کے نیچے والے خانوں میں لکھیں۔</p>
 </div>
-
 <textarea id="fArabic" placeholder="عربی عبارت / حدیث / آیت یہاں لکھیں"></textarea>
 <textarea id="fUrdu" placeholder="اردو ترجمہ و تشریح / جواب یہاں لکھیں"></textarea>
 <input id="fRef" placeholder="حوالہ - مثال: صحیح بخاری: 739">
@@ -93,7 +99,7 @@ textarea{min-height:90px}
 <div class="footer">اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں<br><b>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</b><br><br><a href="javascript:void(0)" onclick="document.getElementById('lock').style.display='flex'" style="color:#999;font-size:11px;text-decoration:none">Admin Login</a></div>
 
 <script>
-let isAdmin=false; let editIndex=-1;
+let isAdmin=false; let editIndex=-1; let expanded={};
 let data = JSON.parse(localStorage.getItem('islamic_data_v1')||'[]');
 let currentTab='all';
 if(data.length===0){
@@ -148,6 +154,12 @@ autoGoogle();
 }
 function toggleFav(i){data[i].fav=!data[i].fav;saveLocal();render()}
 function delItem(i){if(!isAdmin)return;if(confirm('حذف کرنا ہے؟')){data.splice(i,1);saveLocal();render()}}
+function toggleReadMore(idx){
+let el=document.getElementById('urdu-'+idx);
+let btn=document.getElementById('moreBtn-'+idx);
+if(expanded[idx]){el.classList.add('collapsed');btn.innerText='مزید پڑھیں ▼';expanded[idx]=false;}
+else{el.classList.remove('collapsed');btn.innerText='کم کریں ▲';expanded[idx]=true;}
+}
 function render(){
 let q=document.getElementById('searchBox').value.trim();
 let list=document.getElementById('list');list.innerHTML='';
@@ -161,11 +173,14 @@ return txt.includes(q.toLowerCase());
 document.getElementById('empty').style.display=filtered.length?'none':'block';
 filtered.forEach(d=>{
 let origIdx=data.indexOf(d);
+let isLong=(d.urdu||'').length>400;
+let isExp=expanded[origIdx]===true;
 list.innerHTML+=`<div class="card">
 <div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div>
 <div><span class="badge">📂 ${d.cat||'عام'}</span> <span class="badge">📖 ${d.ref||'حوالہ درج نہیں'}</span></div>
 ${d.arabic?`<div class="arabic" style="margin-top:10px">${d.arabic}</div>`:''}
-<div class="urdu" style="margin-top:8px">${d.urdu||''}</div>
+<div id="urdu-${origIdx}" class="urdu ${isLong && !isExp ? 'collapsed':''}" style="margin-top:8px">${d.urdu||''}</div>
+${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?'کم کریں ▲':'مزید پڑھیں ▼'}</button></div>`:''}
 <div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div>
 <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
 <button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>
