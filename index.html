@@ -29,9 +29,7 @@ header p{margin:4px 0;font-size:14px;color:#ffe9a8;line-height:2}
 .card h3{margin:0 0 8px;color:#0b3d2e}
 input,select,textarea{width:100%;padding:10px;margin:5px 0;border:1px solid #ccc;border-radius:9px;font-family:inherit;font-size:14px}
 textarea{min-height:120px;line-height:2.2}
-/* ARABIC - PURE ARABIC STYLE */
-.arabic{font-family:'Scheherazade New','Amiri',serif !important;font-size:28px;direction:rtl;text-align:right;background:#fff8dc;border-right:5px solid #c9a227;padding:14px;border-radius:8px;line-height:2.3;color:#111;font-weight:400}
-/* URDU - NOORI NASTALEEQ - SAME AS BEFORE */
+.arabic{font-family:'Scheherazade New','Amiri',serif !important;font-size:28px;direction:rtl;text-align:right;background:#fff8dc;border-right:5px solid #c9a227;padding:14px;border-radius:8px;line-height:2.3;color:#111}
 .urdu{font-family:'Noto Nastaliq Urdu','Gulzar',serif;line-height:2.2;font-size:16px;color:#222}
 .urdu p{margin:0 0 18px 0;line-height:2.2}
 .urdu h4{color:#0b3d2e !important;font-weight:700 !important;text-decoration:underline;text-decoration-color:#c9a227;text-underline-offset:6px;margin:18px 0 12px 0;font-size:18px;line-height:2}
@@ -53,6 +51,8 @@ textarea{min-height:120px;line-height:2.2}
 .sideItem{border-bottom:1px solid #ffffff22;padding:12px 4px;cursor:pointer}
 .sideItem b{color:#b6f0c8;font-size:16px}
 .sideItem span{float:left;color:#7ef29d}
+.sideItem.home{background:#c9a227;border-radius:8px;padding:12px 8px}
+.sideItem.home b{color:#000}
 .sideSub{padding:8px 12px;background:#ffffff12;border-radius:8px;margin:8px 0;display:none}
 .sideSub div{padding:8px 4px;border-bottom:1px solid #ffffff22;font-size:14px;line-height:1.8}
 .sideSub div:hover{background:#ffffff22;border-radius:6px}
@@ -104,7 +104,6 @@ textarea{min-height:120px;line-height:2.2}
 <button class="btn" onclick="addCat()">+ Topic ایڈ کریں</button>
 <div id="catList"></div>
 <button class="btn red small" onclick="clearExtraCats()">🧹 پرانی خودکار Headings صاف کریں</button>
-<p style="font-size:11px;color:#666">➕ اس میں لکھیں دبائیں گے تو نیچے والا فارم اسی Topic کے لیے کھل جائے گا۔</p>
 </div>
 <p id="editNote" style="font-size:13px;color:#b91c1c;font-weight:bold"></p>
 <select id="typeSel"><option value="topic">موضوع / دلیل</option><option value="qa">سوال و جواب</option></select>
@@ -114,7 +113,7 @@ textarea{min-height:120px;line-height:2.2}
 <textarea id="fArabic" placeholder="عربی عبارت / حدیث / آیت - اب عربی سٹائل میں نظر آئے گی"></textarea>
 <textarea id="fUrdu" placeholder="اردو جواب یہاں لکھیں - ہیڈنگ کے آخر میں : لگائیں تو وہ خود سبز Bold Underline ہو جائے گی"></textarea>
 <input id="fLink" placeholder="🔗 ویڈیو / آڈیو / کتاب کا لنک - مثال: https://youtube.com/...">
-<input id="fRef" placeholder="حوالہ - مثال: صحیح بخاری: 739">
+<input id="fRef" placeholder="حوالہ - صرف آپ کے لیے، ڈسپلے پر نظر نہیں آئے گا">
 <button class="btn" onclick="saveData()">💾 محفوظ کریں</button>
 <button class="btn gold" onclick="cancelEdit()">نیا سوال لکھیں</button>
 <button class="btn red" onclick="logoutAdmin()">ایڈمن بند کریں</button>
@@ -129,10 +128,9 @@ textarea{min-height:120px;line-height:2.2}
 <script>
 let isAdmin=false,editIndex=-1,expanded={},currentTab='all',singleId=-1;
 let cats=JSON.parse(localStorage.getItem('cats_v1')||'["صفحہ اول","دفاع اہل سنت","کتب","رد رافضیت","دور حاضر کے فتنے","سنی شیعہ مناظرے","ویڈیوز","آڈیوز","گرافکس"]');
-// FIX: Purani auto cats ko hatao - sirf wahi rahen jo admin ne likhin
-cats=cats.filter(c=>["صفحہ اول","دفاع اہل سنت","کتب","رد رافضیت","دور حاضر کے فتنے","سنی شیعہ مناظرے","ویڈیوز","آڈیوز","گرافکس"].includes(c) || c.length>0 && !["وضو","نماز","روزہ","نکاح"].includes(c));
 if(cats.includes('وضو')) cats=cats.filter(c=>c!=='وضو');
 if(cats.includes('نماز')) cats=cats.filter(c=>c!=='نماز');
+if(!cats.includes('صفحہ اول')) cats.unshift('صفحہ اول');
 let data=JSON.parse(localStorage.getItem('islamic_data_v1')||'[]');
 if(data.length===0){data=[
 {type:'topic',topic:'نماز میں رفع یدین کا حکم',cat:'دفاع اہل سنت',arabic:'عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا قَالَ: رَأَيْتُ رَسُولَ اللَّهِ ﷺ إِذَا قَامَ فِي الصَّلَاةِ رَفَعَ يَدَيْهِ',urdu:'اصل روایت:\nحضرت عبداللہ بن عمر رضی اللہ عنہما فرماتے ہیں کہ میں نے رسول اللہ ﷺ کو دیکھا جب آپ نماز کے لیے کھڑے ہوتے تو اپنے دونوں ہاتھ کندھوں کے برابر اٹھاتے۔',ref:'صحیح بخاری: 735، صحیح مسلم: 390',link:'',fav:false},
@@ -140,8 +138,9 @@ if(data.length===0){data=[
 ];saveLocal();}
 function saveLocal(){localStorage.setItem('islamic_data_v1',JSON.stringify(data))}
 function saveCats(){localStorage.setItem('cats_v1',JSON.stringify(cats))}
-function clearExtraCats(){cats=cats.filter(c=>!["وضو","نماز"].includes(c));saveCats();renderCats();buildMenu();alert('پرانی خودکار Headings صاف ہو گئیں! اب صرف آپ کی لکھی ہوئی رہیں گی');}
-// COPY PROTECTION - NAME + WEBSITE ADDRESS AUTO ADD
+function clearExtraCats(){cats=cats.filter(c=>!["وضو","نماز"].includes(c));saveCats();renderCats();buildMenu();alert('پرانی خودکار Headings صاف ہو گئیں!');}
+// HOME PAGE
+function goHome(){singleId=-1;currentTab='all';document.getElementById('searchBox').value='';document.getElementById('tab1').classList.add('active');document.getElementById('tab2').classList.remove('active');document.getElementById('tab3').classList.remove('active');closeSidebar();window.scrollTo({top:0,behavior:'smooth'});render();}
 document.addEventListener('copy',function(e){
 let sel=window.getSelection().toString();
 if(sel && sel.length>10){
@@ -160,10 +159,10 @@ function delCat(i){if(confirm(cats[i]+' کو حذف کرنا ہے؟')){cats.spli
 function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('show');buildMenu()}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
 function buildMenu(){
-// SIRF cats wali headings - data se auto nahi banegi
-let html='';
+let html=`<div class="sideItem home" onclick="goHome()"><b>🏠 صفحہ اول - Home</b> <span style="color:#000">⌂</span></div>`;
 cats.forEach(c=>{
-let items=data.filter(d=>d.cat===c);if(c==='صفحہ اول') items=data;
+if(c==='صفحہ اول') return;
+let items=data.filter(d=>d.cat===c);
 let subItems=items.slice(0,8).map(d=>{let idx=data.indexOf(d);return `<div onclick="event.stopPropagation();openSingle(${idx})">▶ ${d.topic}</div>`}).join('')||'<div>ابھی کوئی تحریر نہیں</div>';
 html+=`<div class="sideItem" onclick="toggleSide(this,'${c}')"><b>${c}</b> <span>▼</span><div class="sideSub">${subItems}</div></div>`;
 });
@@ -193,7 +192,8 @@ filtered.forEach(d=>{
 let origIdx=data.indexOf(d);let isLong=(d.urdu||'').length>400;let isExp=expanded[origIdx]===true || singleId===origIdx;
 let linkBtn='';
 if(d.link){let isVideo=d.link.includes('youtube')||d.link.includes('youtu.be')||d.cat==='ویڈیوز';let isPdf=d.link.includes('.pdf');linkBtn=`<a href="${d.link}" target="_blank" style="text-decoration:none"><button class="btn ${isPdf?'gold':'blue'}" style="width:100%;margin-top:8px">${isVideo?'▶️ ویڈیو دیکھیں':isPdf?'📕 کتاب / PDF کھولیں':'🔗 لنک کھولیں'}</button></a>`}
-list.innerHTML+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div><div><span class="badge">📂 ${d.cat||'عام'}</span> <span class="badge">📖 ${d.ref||'حوالہ درج نہیں'}</span></div>${d.arabic?`<div class="arabic" style="margin-top:10px">${formatArabic(d.arabic)}</div>`:''}<div id="urdu-${origIdx}" class="urdu ${isLong&&!isExp?'collapsed':''}" style="margin-top:8px">${formatUrdu(d.urdu)}</div>${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?'کم کریں ▲':'مزید پڑھیں ▼'}</button></div>`:''}${linkBtn}<div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>${isAdmin?`<button class="btn" onclick="editItem(${origIdx})">✏️ ایڈٹ</button><button class="btn red" onclick="delItem(${origIdx})">🗑️ ڈیلیٹ</button>`:''}</div></div>`;
+// HAWALA BADGE HATA DIYA - SIRF CATEGORY BADGE
+list.innerHTML+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div><div><span class="badge">📂 ${d.cat||'عام'}</span></div>${d.arabic?`<div class="arabic" style="margin-top:10px">${formatArabic(d.arabic)}</div>`:''}<div id="urdu-${origIdx}" class="urdu ${isLong&&!isExp?'collapsed':''}" style="margin-top:8px">${formatUrdu(d.urdu)}</div>${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?'کم کریں ▲':'مزید پڑھیں ▼'}</button></div>`:''}${linkBtn}<div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>${isAdmin?`<button class="btn" onclick="editItem(${origIdx})">✏️ ایڈٹ</button><button class="btn red" onclick="delItem(${origIdx})">🗑️ ڈیلیٹ</button>`:''}</div></div>`;
 });}
 buildMenu();render();
 </script>
