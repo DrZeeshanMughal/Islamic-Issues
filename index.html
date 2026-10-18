@@ -32,9 +32,14 @@ textarea{min-height:90px}
 .qbox{background:#f0f7f2;border:1px solid #cce8d4;padding:10px;border-radius:10px;margin-top:10px}
 .hidden{display:none}
 .footer{text-align:center;padding:20px;color:#666;font-size:13px}
+#lock{position:fixed;inset:0;background:#0b3d2ed9;display:none;align-items:center;justify-content:center;z-index:9999}
+#lock>div{background:#fff;padding:20px;border-radius:14px;width:90%;max-width:340px;text-align:center}
 </style>
 </head>
 <body>
+
+<!-- ADMIN LOGIN POPUP -->
+<div id="lock"><div><h3 style="color:#0b3d2e">ایڈمن لاگ ان</h3><p>صرف ڈاکٹر محمد زیشان کے لیے</p><input type="password" id="passInput" placeholder="پاسورڈ لکھیں"><br><br><button class="btn" onclick="checkPass()">کھولیں</button> <button class="btn red" onclick="document.getElementById('lock').style.display='none'">بند</button><p id="err" style="color:red"></p></div></div>
 
 <header>
 <div class="logo">☪</div>
@@ -46,7 +51,6 @@ textarea{min-height:90px}
 <div class="topbar">
 <input id="searchBox" placeholder="🔍 یہاں تلاش کریں... مثال: نماز، روزہ، وضو، نکاح" oninput="render()">
 <button class="btn" onclick="render()">تلاش</button>
-<button class="btn gold" onclick="showAdmin()">+ نیا اضافہ کریں</button>
 </div>
 
 <div class="wrap">
@@ -56,26 +60,28 @@ textarea{min-height:90px}
 <button id="tab3" onclick="setTab('fav')">⭐ پسندیدہ</button>
 </div>
 
-<div id="adminCard" class="card hidden" style="border:2px solid #0b3d2e">
-<h3>📝 نیا موضوع / سوال شامل کریں</h3>
+<!-- ADMIN PANEL - SIRF PASSWORD KE BAAD -->
+<div id="adminCard" class="card hidden" style="border:3px solid #c9a227;background:#fffbe6">
+<h3>🔐 ایڈمن پینل - صرف آپ کے لیے</h3>
+<p style="font-size:12px;color:#666">یہ فارم ویب سائٹ پر عوام کو نظر نہیں آئے گا۔</p>
 <select id="typeSel"><option value="topic">موضوع / دلیل</option><option value="qa">سوال و جواب</option></select>
-<input id="fTopic" placeholder="موضوع / سوال کا عنوان - مثال: نماز میں رفع یدین کا حکم">
-<input id="fCat" placeholder="زمرہ - مثال: نماز، روزہ، عقائد، معاملات">
-<textarea id="fArabic" placeholder="عربی عبارت / حدیث / آیت یہاں لکھیں"></textarea>
-<textarea id="fUrdu" placeholder="اردو ترجمہ و تشریح یہاں لکھیں"></textarea>
-<input id="fRef" placeholder="حوالہ - مثال: صحیح بخاری: 739، صحیح مسلم: 390">
+<input id="fTopic" placeholder="موضوع / سوال کا عنوان">
+<input id="fCat" placeholder="زمرہ - مثال: نماز، روزہ، عقائد">
+<textarea id="fArabic" placeholder="عربی عبارت / حدیث / آیت"></textarea>
+<textarea id="fUrdu" placeholder="اردو ترجمہ و تشریح / جواب"></textarea>
+<input id="fRef" placeholder="حوالہ - مثال: صحیح بخاری: 739">
 <button class="btn" onclick="saveData()">💾 محفوظ کریں</button>
-<button class="btn red" onclick="document.getElementById('adminCard').classList.add('hidden')">بند کریں</button>
-<p style="font-size:12px;color:#666">نوٹ: یہ ڈیٹا آپ کے موبائل / براؤزر میں محفوظ رہے گا۔</p>
+<button class="btn red" onclick="logoutAdmin()">ایڈمن بند کریں</button>
 </div>
 
 <div id="list"></div>
-<div id="empty" class="card" style="text-align:center;display:none">کوئی ڈیٹا نہیں ملا۔ اوپر سے نیا اضافہ کریں۔</div>
+<div id="empty" class="card" style="text-align:center;display:none">کوئی ڈیٹا نہیں ملا۔</div>
 </div>
 
-<div class="footer">اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں<br><b>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</b></div>
+<div class="footer">اسلامی مسائل کا حل قرآن و صحیح احادیث کی روشنی میں<br><b>تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</b><br><br><a href="javascript:void(0)" onclick="document.getElementById('lock').style.display='flex'" style="color:#999;font-size:11px;text-decoration:none">Admin Login</a></div>
 
 <script>
+let isAdmin=false;
 let data = JSON.parse(localStorage.getItem('islamic_data_v1')||'[]');
 let currentTab='all';
 if(data.length===0){
@@ -86,7 +92,12 @@ data=[
 saveLocal();
 }
 function saveLocal(){localStorage.setItem('islamic_data_v1',JSON.stringify(data))}
-function showAdmin(){document.getElementById('adminCard').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
+function checkPass(){
+let v=document.getElementById('passInput').value.trim();
+if(v==="zeeshan786"){isAdmin=true;document.getElementById('lock').style.display='none';document.getElementById('adminCard').classList.remove('hidden');render();alert('ایڈمن کھل گیا! اب آپ سوال / جواب ایڈ کر سکتے ہیں۔');}
+else{document.getElementById('err').innerText='غلط پاسورڈ!';}
+}
+function logoutAdmin(){isAdmin=false;document.getElementById('adminCard').classList.add('hidden');render();}
 function setTab(t){currentTab=t;document.getElementById('tab1').classList.toggle('active',t==='all');document.getElementById('tab2').classList.toggle('active',t==='qa');document.getElementById('tab3').classList.toggle('active',t==='fav');render()}
 function saveData(){
 let t=document.getElementById('fTopic').value.trim();
@@ -97,11 +108,11 @@ document.getElementById('fTopic').value='';document.getElementById('fArabic').va
 alert('محفوظ ہو گیا!');
 }
 function toggleFav(i){data[i].fav=!data[i].fav;saveLocal();render()}
-function delItem(i){if(confirm('حذف کرنا ہے؟')){data.splice(i,1);saveLocal();render()}}
+function delItem(i){if(!isAdmin)return;if(confirm('حذف کرنا ہے؟')){data.splice(i,1);saveLocal();render()}}
 function render(){
 let q=document.getElementById('searchBox').value.trim();
 let list=document.getElementById('list');list.innerHTML='';
-let filtered=data.filter((d,idx)=>{
+let filtered=data.filter((d)=>{
 if(currentTab==='qa' && d.type!=='qa') return false;
 if(currentTab==='fav' && !d.fav) return false;
 if(!q) return true;
@@ -119,9 +130,8 @@ ${d.arabic?`<div class="arabic" style="margin-top:10px">${d.arabic}</div>`:''}
 <div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div>
 <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
 <button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>
-<button class="btn red" onclick="delItem(${origIdx})">حذف</button>
+${isAdmin?`<button class="btn red" onclick="delItem(${origIdx})">حذف کریں (ایڈمن)</button>`:''}
 </div>
-${d.type==='qa'?`<div class="qbox"><b>جواب:</b><br><span class="urdu">${d.urdu}</span><div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div></div>`:''}
 </div>`;
 });
 }
