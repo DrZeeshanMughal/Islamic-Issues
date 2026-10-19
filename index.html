@@ -68,7 +68,12 @@ textarea{min-height:120px;line-height:2.2}
 .videoWrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px;margin-top:10px;background:#000}
 .videoWrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
 .scanImg{width:100%;border:2px solid #c9a227;border-radius:10px;margin-top:10px;cursor:zoom-in}
-.previewBox img{max-width:120px;border:1px solid #ccc;border-radius:8px;margin:4px}
+.previewBox{display:flex;gap:8px;flex-wrap:wrap}
+.previewBox .pItem{position:relative;width:110px}
+.previewBox .pItem img{width:100%;height:110px;object-fit:cover;border:2px solid #c9a227;border-radius:8px}
+.previewBox .pItem button{position:absolute;top:-6px;left:-6px;background:#b91c1c;color:#fff;border:0;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px}
+.scanGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.scanGrid img{width:100%;border:2px solid #c9a227;border-radius:10px;cursor:zoom-in}
 </style>
 </head>
 <body>
@@ -135,10 +140,12 @@ textarea{min-height:120px;line-height:2.2}
 </div>
 
 <div class="fileBox">
-<label>📸 حوالہ کا اسکین / تصویر لگائیں - کتاب کے صفحے کی تصویر</label>
-<input type="file" id="fScanFile" accept="image/*">
+<label>📸 حوالہ کے ملٹی پل اسکین لگائیں - ایک ساتھ کئی تصاویر سلیکٹ کریں</label>
+<input type="file" id="fScanFile" accept="image/*" multiple>
+<p style="font-size:12px;color:#0b3d2e;font-weight:bold">👆 Choose file دبائیں، پھر گیلری میں سے کئی تصاویر سلیکٹ کریں، پھر Done دبائیں - سب ایک ساتھ اپلوڈ ہو جائیں گی</p>
 <input id="fScan" placeholder="یا اسکین کا لنک - مثال: https://.../scan.jpg">
 <div id="scanPreview" class="previewBox"></div>
+<div id="scanCount" style="font-size:12px;color:green;font-weight:bold"></div>
 <button class="btn gold small" onclick="clearMedia()">🗑️ آڈیو / اسکین ہٹائیں</button>
 </div>
 
@@ -156,20 +163,30 @@ textarea{min-height:120px;line-height:2.2}
 
 <script>
 let isAdmin=false,editIndex=-1,expanded={},currentTab='all',singleId=-1;
-let tmpAudio='',tmpScan='';
+let tmpAudio='',tmpScans=[];
 let cats=JSON.parse(localStorage.getItem('cats_v1')||'["صفحہ اول","دفاع اہل سنت","کتب","رد رافضیت","دور حاضر کے فتنے","سنی شیعہ مناظرے","ویڈیوز","آڈیوز","گرافکس"]');
 if(cats.includes('وضو')) cats=cats.filter(c=>c!=='وضو');
 if(cats.includes('نماز')) cats=cats.filter(c=>c!=='نماز');
 if(!cats.includes('صفحہ اول')) cats.unshift('صفحہ اول');
 let data=JSON.parse(localStorage.getItem('islamic_data_v1')||'[]');
 if(data.length===0){data=[
-{type:'topic',topic:'نماز میں رفع یدین کا حکم',cat:'دفاع اہل سنت',arabic:'عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا قَالَ: رَأَيْتُ رَسُولَ اللَّهِ ﷺ إِذَا قَامَ فِي الصَّلَاةِ رَفَعَ يَدَيْهِ',urdu:'اصل روایت:\nحضرت عبداللہ بن عمر رضی اللہ عنہما فرماتے ہیں کہ میں نے رسول اللہ ﷺ کو دیکھا جب آپ نماز کے لیے کھڑے ہوتے تو اپنے دونوں ہاتھ کندھوں کے برابر اٹھاتے۔',ref:'صحیح بخاری: 735، صحیح مسلم: 390',link:'',audio:'',scan:'',fav:false},
-{type:'qa',topic:'شیر خوار بچے کی شرمگاہ کو ہاتھ لگانے سے وضو ٹوٹ جاتا ہے یا نہیں؟',cat:'دفاع اہل سنت',arabic:'إِذَا أَفْضَى أَحَدُكُمْ بِيَدِهِ إِلَى فَرْجِهِ',urdu:'صحیح موقف:\nاس مسئلہ میں صحیح موقف یہ ہے کہ بچے کی شرمگاہ کو ہاتھ لگنے سے وضو ٹوٹ جائے گا۔',ref:'صحیح الجامع: 362',link:'',audio:'',scan:'',fav:false}
+{type:'topic',topic:'نماز میں رفع یدین کا حکم',cat:'دفاع اہل سنت',arabic:'عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا قَالَ: رَأَيْتُ رَسُولَ اللَّهِ ﷺ إِذَا قَامَ فِي الصَّلَاةِ رَفَعَ يَدَيْهِ',urdu:'اصل روایت:\nحضرت عبداللہ بن عمر رضی اللہ عنہما فرماتے ہیں کہ میں نے رسول اللہ ﷺ کو دیکھا جب آپ نماز کے لیے کھڑے ہوتے تو اپنے دونوں ہاتھ کندھوں کے برابر اٹھاتے۔',ref:'صحیح بخاری: 735، صحیح مسلم: 390',link:'',audio:'',scans:[],scan:'',fav:false},
+{type:'qa',topic:'شیر خوار بچے کی شرمگاہ کو ہاتھ لگانے سے وضو ٹوٹ جاتا ہے یا نہیں؟',cat:'دفاع اہل سنت',arabic:'إِذَا أَفْضَى أَحَدُكُمْ بِيَدِهِ إِلَى فَرْجِهِ',urdu:'صحیح موقف:\nاس مسئلہ میں صحیح موقف یہ ہے کہ بچے کی شرمگاہ کو ہاتھ لگنے سے وضو ٹوٹ جائے گا۔',ref:'صحیح الجامع: 362',link:'',audio:'',scans:[],scan:'',fav:false}
 ];saveLocal();}
+function getScans(d){if(d.scans && Array.isArray(d.scans) && d.scans.length) return d.scans; if(d.scan) return [d.scan]; return [];}
 function isVideoItem(d){return d.cat==='ویڈیوز' || (d.link && (d.link.includes('youtube')||d.link.includes('youtu.be')||d.link.includes('shorts')))}
 document.getElementById('fAudioFile').addEventListener('change',function(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(ev){tmpAudio=ev.target.result;document.getElementById('audioPreview').innerHTML='<audio controls style="width:100%" src="'+tmpAudio+'"></audio><p style="color:green;font-size:12px">✅ آڈیو تیار ہے</p>'};r.readAsDataURL(f);});
-document.getElementById('fScanFile').addEventListener('change',function(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(ev){tmpScan=ev.target.result;document.getElementById('scanPreview').innerHTML='<img src="'+tmpScan+'"><p style="color:green;font-size:12px">✅ اسکین تیار ہے</p>'};r.readAsDataURL(f);});
-function clearMedia(){tmpAudio='';tmpScan='';document.getElementById('fAudio').value='';document.getElementById('fScan').value='';document.getElementById('fAudioFile').value='';document.getElementById('fScanFile').value='';document.getElementById('audioPreview').innerHTML='';document.getElementById('scanPreview').innerHTML='';}
+// MULTI SCAN - KEY FIX
+document.getElementById('fScanFile').addEventListener('change',function(e){
+let files=Array.from(e.target.files); if(!files.length) return;
+files.forEach(f=>{let r=new FileReader();r.onload=function(ev){tmpScans.push(ev.target.result);renderScanPreview();};r.readAsDataURL(f);});
+});
+function renderScanPreview(){
+let el=document.getElementById('scanPreview'); el.innerHTML=tmpScans.map((s,i)=>`<div class="pItem"><img src="${s}"><button onclick="removeScan(${i})">✕</button></div>`).join('');
+document.getElementById('scanCount').innerText=tmpScans.length?('✅ '+tmpScans.length+' اسکین تیار ہیں - محفوظ کریں تو سب ایک ساتھ لگ جائیں گے'):'';
+}
+function removeScan(i){tmpScans.splice(i,1);renderScanPreview();}
+function clearMedia(){tmpAudio='';tmpScans=[];document.getElementById('fAudio').value='';document.getElementById('fScan').value='';document.getElementById('fAudioFile').value='';document.getElementById('fScanFile').value='';document.getElementById('audioPreview').innerHTML='';document.getElementById('scanPreview').innerHTML='';document.getElementById('scanCount').innerText='';}
 function saveLocal(){localStorage.setItem('islamic_data_v1',JSON.stringify(data))}
 function saveCats(){localStorage.setItem('cats_v1',JSON.stringify(cats))}
 function clearExtraCats(){cats=cats.filter(c=>!["وضو","نماز"].includes(c));saveCats();renderCats();buildMenu();alert('پرانی خودکار Headings صاف ہو گئیں!');}
@@ -197,24 +214,22 @@ function openGoogle(m){let q=document.getElementById('fTopic').value.trim();if(!
 function saveData(){
 let t=document.getElementById('fTopic').value.trim();if(!t){alert('عنوان لکھیں');return}
 let audioVal=tmpAudio||document.getElementById('fAudio').value.trim();
-let scanVal=tmpScan||document.getElementById('fScan').value.trim();
-let obj={type:document.getElementById('typeSel').value,topic:t,cat:document.getElementById('fCat').value,arabic:document.getElementById('fArabic').value,urdu:document.getElementById('fUrdu').value,ref:document.getElementById('fRef').value,link:document.getElementById('fLink').value,audio:audioVal,scan:scanVal,fav:false};
+let scans=[...tmpScans];
+let linkScan=document.getElementById('fScan').value.trim(); if(linkScan) scans.push(linkScan);
+let obj={type:document.getElementById('typeSel').value,topic:t,cat:document.getElementById('fCat').value,arabic:document.getElementById('fArabic').value,urdu:document.getElementById('fUrdu').value,ref:document.getElementById('fRef').value,link:document.getElementById('fLink').value,audio:audioVal,scans:scans,scan:scans[0]||'',fav:false};
 if(editIndex>=0){obj.fav=data[editIndex].fav;data[editIndex]=obj;alert('ایڈٹ ہو کر محفوظ ہو گیا!')}else{data.unshift(obj);alert('نیا محفوظ ہو گیا!')}
 saveLocal();cancelEdit();render();buildMenu();renderCats();
 }
-function cancelEdit(){editIndex=-1;tmpAudio='';tmpScan='';document.getElementById('editNote').innerText='';document.getElementById('fTopic').value='';document.getElementById('fCat').value='';document.getElementById('fArabic').value='';document.getElementById('fUrdu').value='';document.getElementById('fRef').value='';document.getElementById('fLink').value='';document.getElementById('fAudio').value='';document.getElementById('fScan').value='';document.getElementById('fAudioFile').value='';document.getElementById('fScanFile').value='';document.getElementById('audioPreview').innerHTML='';document.getElementById('scanPreview').innerHTML='';document.getElementById('googleBox').classList.add('hidden');}
-function editItem(i){if(!isAdmin)return;let d=data[i];editIndex=i;tmpAudio=d.audio||'';tmpScan=d.scan||'';document.getElementById('typeSel').value=d.type;document.getElementById('fTopic').value=d.topic;document.getElementById('fCat').value=d.cat||'';document.getElementById('fArabic').value=d.arabic||'';document.getElementById('fUrdu').value=d.urdu||'';document.getElementById('fRef').value=d.ref||'';document.getElementById('fLink').value=d.link||'';document.getElementById('fAudio').value=(d.audio||'').startsWith('data:')?'':(d.audio||'');document.getElementById('fScan').value=(d.scan||'').startsWith('data:')?'':(d.scan||'');if(tmpAudio) document.getElementById('audioPreview').innerHTML='<audio controls style="width:100%" src="'+tmpAudio+'"></audio>';if(tmpScan) document.getElementById('scanPreview').innerHTML='<img src="'+tmpScan+'">';document.getElementById('editNote').innerText='✏️ ایڈٹ موڈ: '+d.topic;document.getElementById('adminCard').scrollIntoView({behavior:'smooth'});autoGoogle();}
+function cancelEdit(){editIndex=-1;tmpAudio='';tmpScans=[];document.getElementById('editNote').innerText='';document.getElementById('fTopic').value='';document.getElementById('fCat').value='';document.getElementById('fArabic').value='';document.getElementById('fUrdu').value='';document.getElementById('fRef').value='';document.getElementById('fLink').value='';document.getElementById('fAudio').value='';document.getElementById('fScan').value='';document.getElementById('fAudioFile').value='';document.getElementById('fScanFile').value='';document.getElementById('audioPreview').innerHTML='';document.getElementById('scanPreview').innerHTML='';document.getElementById('scanCount').innerText='';document.getElementById('googleBox').classList.add('hidden');}
+function editItem(i){if(!isAdmin)return;let d=data[i];editIndex=i;tmpAudio=d.audio||'';tmpScans=getScans(d);document.getElementById('typeSel').value=d.type;document.getElementById('fTopic').value=d.topic;document.getElementById('fCat').value=d.cat||'';document.getElementById('fArabic').value=d.arabic||'';document.getElementById('fUrdu').value=d.urdu||'';document.getElementById('fRef').value=d.ref||'';document.getElementById('fLink').value=d.link||'';document.getElementById('fAudio').value=(d.audio||'').startsWith('data:')?'':(d.audio||'');document.getElementById('fScan').value='';if(tmpAudio) document.getElementById('audioPreview').innerHTML='<audio controls style="width:100%" src="'+tmpAudio+'"></audio>';renderScanPreview();document.getElementById('editNote').innerText='✏️ ایڈٹ موڈ: '+d.topic;document.getElementById('adminCard').scrollIntoView({behavior:'smooth'});autoGoogle();}
 function toggleFav(i){data[i].fav=!data[i].fav;saveLocal();render()}
 function delItem(i){if(!isAdmin)return;if(confirm('حذف کرنا ہے؟')){data.splice(i,1);saveLocal();render();buildMenu();}}
 function toggleReadMore(idx){let el=document.getElementById('urdu-'+idx);let btn=document.getElementById('moreBtn-'+idx);if(expanded[idx]){el.classList.add('collapsed');btn.innerText='مزید پڑھیں ▼';expanded[idx]=false;}else{el.classList.remove('collapsed');btn.innerText='کم کریں ▲';expanded[idx]=true;}}
 function render(){
 let q=document.getElementById('searchBox').value.trim();
 let list=document.getElementById('list');list.innerHTML='';
-// VIDEO HIDE ON HOMEPAGE - ONLY SHOW WHEN VIDEOS FILTERED
-let isVideosView = q==='ویڈیوز' || singleId>=0;
 let filtered=data.filter((d)=>{
 if(singleId>=0) return data.indexOf(d)===singleId;
-// Home page / All tab: videos hide
 if(!q && currentTab==='all' && isVideoItem(d)) return false;
 if(currentTab==='qa'&&d.type!=='qa')return false;
 if(currentTab==='fav'&&!d.fav)return false;
@@ -235,9 +250,9 @@ if(yid){videoHtml=`<div class="videoWrap"><iframe src="https://www.youtube-nocoo
 else if(d.link.includes('.mp3')||d.link.includes('.wav')||d.link.includes('.m4a')){videoHtml=`<div class="audioWrap"><audio controls preload="metadata" src="${d.link}"></audio></div>`;}
 else{let isPdf=d.link.includes('.pdf');videoHtml=`<a href="${d.link}" target="_blank" style="text-decoration:none"><button class="btn ${isPdf?'gold':'blue'}" style="width:100%;margin-top:8px">${isPdf?'📕 کتاب / PDF کھولیں':'🔗 لنک کھولیں'}</button></a>`;}
 }
+let scans=getScans(d);
 let scanHtml='';
-if(d.scan){scanHtml=`<div style="margin-top:10px"><div style="font-weight:bold;color:#0b3d2e;font-size:13px">📸 حوالہ اسکین</div><img class="scanImg" src="${d.scan}" onclick="window.open(this.src,'_blank')" alt="حوالہ اسکین"></div>`;}
-// AUTHOR LINE - ONLY FOR TOPIC / QA, NOT FOR VIDEO
+if(scans.length){scanHtml=`<div style="margin-top:10px"><div style="font-weight:bold;color:#0b3d2e;font-size:13px">📸 حوالہ اسکین (${scans.length})</div><div class="scanGrid">${scans.map(s=>`<img src="${s}" onclick="window.open(this.src,'_blank')">`).join('')}</div></div>`;}
 let authorHtml = isVid ? '' : `<div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div>`;
 list.innerHTML+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div><div><span class="badge">📂 ${d.cat||'عام'}</span></div>${d.arabic?`<div class="arabic" style="margin-top:10px">${formatArabic(d.arabic)}</div>`:''}<div id="urdu-${origIdx}" class="urdu ${isLong&&!isExp?'collapsed':''}" style="margin-top:8px">${formatUrdu(d.urdu)}</div>${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?'کم کریں ▲':'مزید پڑھیں ▼'}</button></div>`:''}${audioHtml}${videoHtml}${scanHtml}${authorHtml}<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>${isAdmin?`<button class="btn" onclick="editItem(${origIdx})">✏️ ایڈٹ</button><button class="btn red" onclick="delItem(${origIdx})">🗑️ ڈیلیٹ</button>`:''}</div></div>`;
 });}
