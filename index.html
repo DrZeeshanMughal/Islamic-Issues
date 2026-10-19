@@ -90,7 +90,6 @@ textarea{min-height:120px;line-height:2.2}
 <div id="lightbox" onclick="if(event.target.id==='lightbox') closeLightbox()">
 <img id="lbImg" src="" alt="حوالہ اسکین">
 <div class="lbBar"><button style="background:#c9a227" onclick="zoomLb(1)">🔍 + بڑا</button><button style="background:#fff" onclick="zoomLb(-1)">🔍 - چھوٹا</button><button style="background:#b91c1c;color:#fff" onclick="closeLightbox()">✕ بند کریں</button></div>
-<p style="color:#fff;font-size:13px">اسکین کو زوم کر کے واضح دیکھیں - اوپر دبانے سے بھی بند ہو جائے گا</p>
 </div>
 
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
@@ -274,7 +273,6 @@ else{let isPdf=d.link.includes('.pdf');videoHtml=`<a href="${d.link}" target="_b
 let scans=getScans(d);
 let scanHtml='';
 if(scans.length){scanHtml=`<div style="margin-top:10px"><div style="font-weight:bold;color:#0b3d2e;font-size:13px">📸 حوالہ اسکین (${scans.length}) - کھولنے کے لیے تصویر پر کلک کریں</div><div class="scanGrid">${scans.map((s,i)=>`<img src="${s}" onclick="openLightbox(this.src)">`).join('')}</div></div>`;}
-// SCAN / AUDIO / VIDEO - INSIDE BOX, ONLY AFTER MAZID PARHEN
 let extraHtml='';
 if(scanHtml||audioHtml||videoHtml){
 let hideClass=(isLong && !isExp)?' hidden':'';
