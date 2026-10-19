@@ -126,12 +126,12 @@ textarea{min-height:120px;line-height:2.2}
 <input type="file" id="fAudioFile" accept="audio/*">
 <input id="fAudio" placeholder="یا آڈیو کا لنک - مثال: https://.../audio.mp3">
 <div id="audioPreview" class="previewBox"></div>
-<p style="font-size:11px;color:#666">آڈیو فائل منتخب کریں تو وہ خود اسی تحریر کے ساتھ محفوظ ہو جائے گی۔</p>
 </div>
 
 <div class="fileBox">
 <label>🎥 ویڈیو لنک - YouTube لنک ڈالیں تو اسی پیج پر چلے گی</label>
 <input id="fLink" placeholder="🔗 ویڈیو لنک - مثال: https://youtube.com/watch?v=... یا https://youtu.be/...">
+<p style="font-size:11px;color:#666">نوٹ: ویڈیوز والی تحریر صرف ویڈیوز بٹن دبانے پر نظر آئے گی، ہوم پیج پر نہیں۔</p>
 </div>
 
 <div class="fileBox">
@@ -166,7 +166,7 @@ if(data.length===0){data=[
 {type:'topic',topic:'نماز میں رفع یدین کا حکم',cat:'دفاع اہل سنت',arabic:'عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ رَضِيَ اللَّهُ عَنْهُمَا قَالَ: رَأَيْتُ رَسُولَ اللَّهِ ﷺ إِذَا قَامَ فِي الصَّلَاةِ رَفَعَ يَدَيْهِ',urdu:'اصل روایت:\nحضرت عبداللہ بن عمر رضی اللہ عنہما فرماتے ہیں کہ میں نے رسول اللہ ﷺ کو دیکھا جب آپ نماز کے لیے کھڑے ہوتے تو اپنے دونوں ہاتھ کندھوں کے برابر اٹھاتے۔',ref:'صحیح بخاری: 735، صحیح مسلم: 390',link:'',audio:'',scan:'',fav:false},
 {type:'qa',topic:'شیر خوار بچے کی شرمگاہ کو ہاتھ لگانے سے وضو ٹوٹ جاتا ہے یا نہیں؟',cat:'دفاع اہل سنت',arabic:'إِذَا أَفْضَى أَحَدُكُمْ بِيَدِهِ إِلَى فَرْجِهِ',urdu:'صحیح موقف:\nاس مسئلہ میں صحیح موقف یہ ہے کہ بچے کی شرمگاہ کو ہاتھ لگنے سے وضو ٹوٹ جائے گا۔',ref:'صحیح الجامع: 362',link:'',audio:'',scan:'',fav:false}
 ];saveLocal();}
-// FILE READERS - ADMIN ONLY
+function isVideoItem(d){return d.cat==='ویڈیوز' || (d.link && (d.link.includes('youtube')||d.link.includes('youtu.be')||d.link.includes('shorts')))}
 document.getElementById('fAudioFile').addEventListener('change',function(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(ev){tmpAudio=ev.target.result;document.getElementById('audioPreview').innerHTML='<audio controls style="width:100%" src="'+tmpAudio+'"></audio><p style="color:green;font-size:12px">✅ آڈیو تیار ہے</p>'};r.readAsDataURL(f);});
 document.getElementById('fScanFile').addEventListener('change',function(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(ev){tmpScan=ev.target.result;document.getElementById('scanPreview').innerHTML='<img src="'+tmpScan+'"><p style="color:green;font-size:12px">✅ اسکین تیار ہے</p>'};r.readAsDataURL(f);});
 function clearMedia(){tmpAudio='';tmpScan='';document.getElementById('fAudio').value='';document.getElementById('fScan').value='';document.getElementById('fAudioFile').value='';document.getElementById('fScanFile').value='';document.getElementById('audioPreview').innerHTML='';document.getElementById('scanPreview').innerHTML='';}
@@ -210,15 +210,24 @@ function toggleReadMore(idx){let el=document.getElementById('urdu-'+idx);let btn
 function render(){
 let q=document.getElementById('searchBox').value.trim();
 let list=document.getElementById('list');list.innerHTML='';
-let filtered=data.filter((d)=>{if(singleId>=0) return data.indexOf(d)===singleId;if(currentTab==='qa'&&d.type!=='qa')return false;if(currentTab==='fav'&&!d.fav)return false;if(!q)return true;let txt=(d.topic+d.cat+d.arabic+d.urdu+d.ref).toLowerCase();return txt.includes(q.toLowerCase());});
+// VIDEO HIDE ON HOMEPAGE - ONLY SHOW WHEN VIDEOS FILTERED
+let isVideosView = q==='ویڈیوز' || singleId>=0;
+let filtered=data.filter((d)=>{
+if(singleId>=0) return data.indexOf(d)===singleId;
+// Home page / All tab: videos hide
+if(!q && currentTab==='all' && isVideoItem(d)) return false;
+if(currentTab==='qa'&&d.type!=='qa')return false;
+if(currentTab==='fav'&&!d.fav)return false;
+if(!q)return true;
+let txt=(d.topic+d.cat+d.arabic+d.urdu+d.ref).toLowerCase();return txt.includes(q.toLowerCase());
+});
 document.getElementById('empty').style.display=filtered.length?'none':'block';
 if(singleId>=0 && filtered.length){list.innerHTML=`<button class="backBtn" onclick="singleId=-1;render();window.scrollTo({top:0,behavior:'smooth'})">← واپس تمام تحریریں دیکھیں</button>`;}
 filtered.forEach(d=>{
 let origIdx=data.indexOf(d);let isLong=(d.urdu||'').length>400;let isExp=expanded[origIdx]===true || singleId===origIdx;
-// AUDIO - SAME SITE PLAYER
+let isVid=isVideoItem(d);
 let audioHtml='';
 if(d.audio){audioHtml=`<div class="audioWrap"><div style="color:#fff;font-size:13px;margin-bottom:6px">🎧 آڈیو - اسی ویب سائٹ پر سنیں</div><audio controls preload="metadata" src="${d.audio}"></audio></div>`;}
-// VIDEO - YOUTUBE EMBED OR LINK
 let videoHtml='';
 if(d.link){
 let yid=ytId(d.link);
@@ -226,10 +235,11 @@ if(yid){videoHtml=`<div class="videoWrap"><iframe src="https://www.youtube-nocoo
 else if(d.link.includes('.mp3')||d.link.includes('.wav')||d.link.includes('.m4a')){videoHtml=`<div class="audioWrap"><audio controls preload="metadata" src="${d.link}"></audio></div>`;}
 else{let isPdf=d.link.includes('.pdf');videoHtml=`<a href="${d.link}" target="_blank" style="text-decoration:none"><button class="btn ${isPdf?'gold':'blue'}" style="width:100%;margin-top:8px">${isPdf?'📕 کتاب / PDF کھولیں':'🔗 لنک کھولیں'}</button></a>`;}
 }
-// SCAN - HAWALA IMAGE
 let scanHtml='';
 if(d.scan){scanHtml=`<div style="margin-top:10px"><div style="font-weight:bold;color:#0b3d2e;font-size:13px">📸 حوالہ اسکین</div><img class="scanImg" src="${d.scan}" onclick="window.open(this.src,'_blank')" alt="حوالہ اسکین"></div>`;}
-list.innerHTML+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div><div><span class="badge">📂 ${d.cat||'عام'}</span></div>${d.arabic?`<div class="arabic" style="margin-top:10px">${formatArabic(d.arabic)}</div>`:''}<div id="urdu-${origIdx}" class="urdu ${isLong&&!isExp?'collapsed':''}" style="margin-top:8px">${formatUrdu(d.urdu)}</div>${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?'کم کریں ▲':'مزید پڑھیں ▼'}</button></div>`:''}${audioHtml}${videoHtml}${scanHtml}<div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>${isAdmin?`<button class="btn" onclick="editItem(${origIdx})">✏️ ایڈٹ</button><button class="btn red" onclick="delItem(${origIdx})">🗑️ ڈیلیٹ</button>`:''}</div></div>`;
+// AUTHOR LINE - ONLY FOR TOPIC / QA, NOT FOR VIDEO
+let authorHtml = isVid ? '' : `<div class="author">تحقیق و تحریر از قلم: ڈاکٹر محمد زیشان</div>`;
+list.innerHTML+=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:start;gap:8px"><h3 style="flex:1">${d.topic}</h3><span class="badge">${d.type==='qa'?'سوال و جواب':'موضوع'}</span></div><div><span class="badge">📂 ${d.cat||'عام'}</span></div>${d.arabic?`<div class="arabic" style="margin-top:10px">${formatArabic(d.arabic)}</div>`:''}<div id="urdu-${origIdx}" class="urdu ${isLong&&!isExp?'collapsed':''}" style="margin-top:8px">${formatUrdu(d.urdu)}</div>${isLong?`<div style="text-align:center;margin-top:6px"><button id="moreBtn-${origIdx}" class="btn gold small" onclick="toggleReadMore(${origIdx})">${isExp?'کم کریں ▲':'مزید پڑھیں ▼'}</button></div>`:''}${audioHtml}${videoHtml}${scanHtml}${authorHtml}<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn gold" onclick="toggleFav(${origIdx})">${d.fav?'★ پسندیدہ':'☆ پسندیدہ کریں'}</button>${isAdmin?`<button class="btn" onclick="editItem(${origIdx})">✏️ ایڈٹ</button><button class="btn red" onclick="delItem(${origIdx})">🗑️ ڈیلیٹ</button>`:''}</div></div>`;
 });}
 buildMenu();render();
 </script>
